@@ -1,0 +1,28 @@
+import hou
+import os
+import re
+
+new_suffix_format = '_0001'
+regex = re.compile('(.*?)(\d+)(\.\w+)')
+
+def main():
+    hip = hou.hipFile
+    filename = hip.path()
+    match = regex.match(filename)
+    if match:
+        filename, number, ext = match.groups()
+        filename += str(int(number) + 1).rjust(len(number), '0') + ext
+    else:
+        filename, ext = os.path.splitext(filename)
+        filename += new_suffix_format + ext
+
+    if os.path.isfile(filename):
+        overwrite = hou.ui.displayConfirmation(
+            'The file "{}" already exists. Do you want to overwrite it?'
+            .format(filename))
+        if not overwrite:
+            return
+
+    hip.save(filename)
+
+main()
